@@ -2,7 +2,7 @@
 
 import SimpleLightbox from 'simplelightbox';
 
-import { galleryItems } from './gallery-items';
+import { galleryItems } from './gallery-items.js';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 // Change code below this line
 console.log(galleryItems);
