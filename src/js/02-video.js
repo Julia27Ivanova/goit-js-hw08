@@ -1,5 +1,5 @@
 'use strict';
-import { saveData, loadData } from './local-storage-save-data/storage.js';
+import { saveData, loadData } from './storage.js';
 import Player from '@video/player';
 const throttle = require('lodash.throttle');
 const LOCALSTORAGE_KEY = 'videoplayer-current-time';
