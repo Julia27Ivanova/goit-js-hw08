@@ -1,30 +1,44 @@
-'use strict';
-
-import SimpleLightbox from 'simplelightbox';
-
-import { galleryItems } from './gallery-items.js';
-import 'simplelightbox/dist/simple-lightbox.min.css';
+// Add imports above this line
+import { galleryItems } from './gallery-items';
 // Change code below this line
-console.log(galleryItems);
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
 
-const galleryEl = document.querySelector('.gallery');
-galleryEl.innerHTML = createGalleryItemsMarkup(galleryItems);
+const galleryBox = document.querySelector('.gallery');
+const imagesMarkup = createGalleryMarkup(galleryItems);
+galleryBox.insertAdjacentHTML('beforeend', imagesMarkup);
 
-function createGalleryItemsMarkup(items) {
-  return items
-    .map(
-      item => `<a class="gallery__item" href="${item.original}">
-        <img class="gallery__image" src="${item.preview}" alt="${item.description}" />
-      </a>`
-    )
+let gallery = new SimpleLightbox('.gallery a');
+gallery.on('show.simplelightbox', onImageClick);
+
+function createGalleryMarkup(galleryItems) {
+  return galleryItems
+    .map(({ preview, original, description }) => {
+      return `<div class="gallery__item">
+    <a class="gallery__item" href="${original}">
+  <img class="gallery__image" src="${preview}" alt="${description}"/>
+</a>
+  </div>`;
+    })
     .join('');
 }
 
-const settingsSimpleLightbox = {
-  captionsData: 'alt',
-  captionDelay: 250,
-};
-let gallerySimpleLightbox = new SimpleLightbox(
-  '.gallery a',
-  settingsSimpleLightbox
-);
+function stopLoadingImg(e) {
+  e.preventDefault();
+}
+
+function summonSimpleLightbox() {
+  new SimpleLightbox('.gallery a', {
+    captions: true,
+    captionsData: 'alt',
+    captionDelay: 250,
+  });
+}
+
+function onImageClick(e) {
+  stopLoadingImg(e);
+
+  if (e.target.nodeName === 'IMG') {
+    summonSimpleLightbox();
+  }
+}

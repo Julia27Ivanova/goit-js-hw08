@@ -1,58 +1,54 @@
-'use strict';
 import {
-  saveData,
-  loadData,
-  removeData,
-} from './storage.js';
+  saveKeyToLocal,
+  loadKeyFromLocal,
+  removeKeyFromLocal,
+} from './storage';
+
 const throttle = require('lodash.throttle');
-const refs = {
-  formEl: document.querySelector('.feedback-form'),
-  inputEl: document.querySelector('.feedback-form input'),
-  textareaEl: document.querySelector('.feedback-form textarea'),
-};
-const LOCALSTORAGE_KEY = 'feedback-form-state';
-let userForm = loadData(LOCALSTORAGE_KEY) ?? {
+const form = document.querySelector('.feedback-form');
+const input = document.querySelector('input');
+const textarea = document.querySelector('textarea');
+const KEY_DATA = 'feedback-form-state';
+
+form.addEventListener('input', throttle(saveDataToLocal, 500));
+form.addEventListener('submit', onFormSubmit);
+
+let storage = {
   email: '',
   message: '',
 };
 
-refs.formEl.addEventListener('input', throttle(onInputOrTextareaData, 500));
-refs.formEl.addEventListener('submit', onSubmitForm);
+loadDataFromLocal();
 
-recordingData();
-checkOfEnteredData();
-
-function onInputOrTextareaData(evt) {
-  userForm[evt.target.name] = evt.target.value;
-  saveData(LOCALSTORAGE_KEY, userForm);
-}
-function checkOfEnteredData() {
-  if (refs.textareaEl.value) {
-    userForm.message = refs.textareaEl.value;
-    saveData(LOCALSTORAGE_KEY, userForm);
+function saveDataToLocal(e) {
+  if (e.target.tagName === 'INPUT') {
+    storage.email = e.target.value;
   }
-  if (refs.inputEl.value) {
-    userForm.email = refs.inputEl.value;
-    saveData(LOCALSTORAGE_KEY, userForm);
+  if (e.target.tagName === 'TEXTAREA') {
+    storage.message = e.target.value;
   }
+  saveKeyToLocal(KEY_DATA, storage);
 }
-function recordingData() {
-  const savedData = loadData(LOCALSTORAGE_KEY);
 
-  if (savedData) {
-    refs.inputEl.value = savedData.email;
-    refs.textareaEl.value = savedData.message;
-    return savedData;
+function loadDataFromLocal() {
+  if (loadKeyFromLocal(KEY_DATA)) {
+    storage = loadKeyFromLocal(KEY_DATA);
+  }
+
+  if (storage.email !== '') {
+    input.value = storage.email;
+  }
+
+  if (storage.message !== '') {
+    textarea.value = storage.message;
   }
 }
-function onSubmitForm(evt) {
-  evt.preventDefault();
-  if (!evt.target.email.value || !evt.target.message.value) {
-    return;
-  }
-  console.log(userForm);
-  userForm.email = '';
-  userForm.message = '';
-  removeData(LOCALSTORAGE_KEY);
-  evt.target.reset();
+
+function onFormSubmit(e) {
+  e.preventDefault();
+  e.currentTarget.reset();
+  removeKeyFromLocal(KEY_DATA);
+  storage.email = '';
+  storage.message = '';
+  console.log(storage);
 }

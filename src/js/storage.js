@@ -1,26 +1,23 @@
-'use strict';
-export const saveData = (key, value) => {
+const saveKeyToLocal = (key, value) => {
   try {
-    const savedStringifyValue = JSON.stringify(value);
-    localStorage.setItem(key, savedStringifyValue);
+    const serializedState = JSON.stringify(value);
+    localStorage.setItem(key, serializedState);
   } catch (error) {
-    console.error("Save data failed: ", error.message);
+    console.error('Set state error: ', error.message);
   }
 };
 
-export const loadData = key => {
+const loadKeyFromLocal = key => {
   try {
-    const loadedStringifyValue = localStorage.getItem(key);
-    return loadedStringifyValue === null ? undefined : JSON.parse(loadedStringifyValue);
+    const serializedState = localStorage.getItem(key);
+    return serializedState === null ? undefined : JSON.parse(serializedState);
   } catch (error) {
-    console.error("Load data failed: ", error.message);
+    console.error('Get state error: ', error.message);
   }
 };
 
-export const removeData = key => {
-    try {
-        localStorage.removeItem(key);
-    } catch (error) {
-        console.error("Remove data failed: ", error.message)
-    }
+const removeKeyFromLocal = key => {
+  localStorage.removeItem(key);
 };
+
+export { saveKeyToLocal, loadKeyFromLocal, removeKeyFromLocal };
