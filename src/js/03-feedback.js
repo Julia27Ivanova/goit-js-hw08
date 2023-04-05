@@ -1,54 +1,50 @@
-import {
-  saveKeyToLocal,
-  loadKeyFromLocal,
-  removeKeyFromLocal,
-} from './storage';
+import throttle from 'lodash.throttle';
 
-const throttle = require('lodash.throttle');
-const form = document.querySelector('.feedback-form');
-const input = document.querySelector('input');
-const textarea = document.querySelector('textarea');
-const KEY_DATA = 'feedback-form-state';
+const form = document.querySelector('.feedback.form');
 
-form.addEventListener('input', throttle(saveDataToLocal, 500));
+const LOCALSTORAGE_KEY = 'feedback-form-state';
+
+let dataForm = {};
+
+onDownload();
+
+form.addEventListener('input', throttle(onSaveFormInput, 500));
+
 form.addEventListener('submit', onFormSubmit);
 
-let storage = {
-  email: '',
-  message: '',
-};
+// Відстежуй на формі подію input, і щоразу записуй у локальне сховище об'єкт з полями email і message, у яких зберігай поточні значення полів форми. Нехай ключем для сховища буде рядок "feedback-form-state".
+function onSaveFormInput(event) {
+  
+  dataForm[event.target.name] = event.target.value;
 
-loadDataFromLocal();
-
-function saveDataToLocal(e) {
-  if (e.target.tagName === 'INPUT') {
-    storage.email = e.target.value;
-  }
-  if (e.target.tagName === 'TEXTAREA') {
-    storage.message = e.target.value;
-  }
-  saveKeyToLocal(KEY_DATA, storage);
+  localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(dataForm));
 }
 
-function loadDataFromLocal() {
-  if (loadKeyFromLocal(KEY_DATA)) {
-    storage = loadKeyFromLocal(KEY_DATA);
-  }
+// Під час завантаження сторінки перевіряй стан сховища, і якщо там є збережені дані, заповнюй ними поля форми. В іншому випадку поля повинні бути порожніми.
+function onDownload() {
 
-  if (storage.email !== '') {
-    input.value = storage.email;
-  }
+  try {
+    let savedMessaged = JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY));
+    if (savedMessaged)
 
-  if (storage.message !== '') {
-    textarea.value = storage.message;
+    dataForm = savedMessaged;
+    form.email.value = dataForm.email || '';
+    form.message.value = dataForm.message || '';
+  } catch (error) {
+    console.error('Помилка:', error.message);
   }
 }
 
-function onFormSubmit(e) {
-  e.preventDefault();
-  e.currentTarget.reset();
-  removeKeyFromLocal(KEY_DATA);
-  storage.email = '';
-  storage.message = '';
-  console.log(storage);
+// Під час сабміту форми очищуй сховище і поля форми, а також виводь у консоль об'єкт з полями email, message та їхніми поточними значеннями.
+function onFormSubmit(event) {
+  event.preventDefault();
+  if (!event.target.email.value || !event.target.message.value) {
+    alert('Заповніть всі поля форми, будь ласка');
+    return;
+  }
+console.log('Поточні дані полів форми:', dataForm);
+  event.target.reset();
+  
+  localStorage.removeItem(LOCALSTORAGE_KEY);
+  dataForm = {}; 
 }
